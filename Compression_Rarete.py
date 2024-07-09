@@ -1,59 +1,38 @@
 
-from json import load as load_json
 from sys import argv
-from pickle import dump, load as load_pickle
+from pickle import dump, load as load
 from os.path import splitext
 from bitIO import *
 from string import punctuation
 import re
 
 
-def init():
-
-    with open("wordsChar.json") as freqs_json:
-        d = load_json(freqs_json)
-
-    i_to_word = list(d.keys())
-    i_to_word.sort(key=lambda x: d[x], reverse=True)
-
-    i_to_word = separators + i_to_word
-
-    word_to_i = {w:i for (i, w) in enumerate(i_to_word)}
-
-    with open("i_to_word.pickle", "wb") as i_to_word_file:
-        dump(i_to_word, i_to_word_file)
-
-    with open("word_to_i.pickle", "wb") as word_to_i_file:
-        dump(word_to_i, word_to_i_file)
-
-
 def get_mappings():
 
-    i_to_word = []
-    word_to_i = dict()
+    with open("top_english_words_mixed_1000000.txt", encoding="utf-8") as top_words:
+        i_to_word = top_words.read().splitlines()
 
-    with open("i_to_word.pickle", "rb") as i_to_word_file:
-        i_to_word = load_pickle(i_to_word_file)
+    i_to_word_copy = i_to_word.copy()
 
-    with open("word_to_i.pickle", "rb") as word_to_i_file:
-        word_to_i = load_pickle(word_to_i_file)
+    for i, word in enumerate(i_to_word):
+
+        if "'" in word:
+            new_word = word.replace("'", "")
+            i_to_word_copy.insert(i, new_word)
+
+    i_to_word = special_chars + i_to_word_copy
+
+    word_to_i = {w:i for (i, w) in enumerate(i_to_word)}
 
     return i_to_word, word_to_i
 
 
 def main():
 
-    global separators
-    separators = list(punctuation) + [" "]
-
-    # init()
+    global special_chars
+    special_chars = [" ", "", "\n", "\t"] + list(punctuation)
 
     i_to_word, word_to_i = get_mappings()
-
-    re_syntax = "[" + punctuation + " \n\t" + "]"
-    print(re_syntax)
-
-    print(re.split(re_syntax, "Je suis d'accord, c'est ouf."))
 
     match argv[1]:
         case "-c":
@@ -66,10 +45,11 @@ def main():
     if compress:
 
         with open(argv[2]) as text:
-            words = text.read().split()
+            words = re.findall(r"[\w']+|[.,!?;:%\n\t]", text.read())
 
-        output = [word_to_i[w.lower()] for w in words]
-        rarete = max([x.bit_length() for x in output]) - 1
+        output = [word_to_i[w] for w in words]
+
+        rarete = max([x.bit_length() for x in output])
 
         filename = splitext(argv[2])[0] + ".mlx"
 
@@ -79,7 +59,9 @@ def main():
                 writer.writebits(rarete, 5)
 
                 for i in output:
-                    writer.writebits(i, rarete)
+                    writer.writebits(i + 1, rarete)
+                
+                writer.writebits(0, rarete)
     
     else:
 
@@ -92,18 +74,22 @@ def main():
                     rarete = reader.readbits(5)
                     words = []
 
-                    while reader.read:
+                    index = reader.readbits(rarete)
 
-                        index = reader.readbits(rarete)
-                        w = i_to_word[index]
+                    while index != 0:
+
+                        w = i_to_word[index - 1]
                         words.append(w)
-                    
-                    outfile.write(" ".join(words))
+                        index = reader.readbits(rarete)           
 
+                    sentence = " ".join(words)
+                    to_correct = {f" {c}": f"{c}" for c in ",;.%\n\t"}
+                    to_correct.update({"\n ": "\n", "\t ": "\t"})
 
+                    for old, new in to_correct.items():
+                        sentence = sentence.replace(old, new)
 
-
-
+                    outfile.write(sentence)
 
 
 main()
