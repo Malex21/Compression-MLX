@@ -4,7 +4,7 @@
 
 Outil de compression de fichier texte. Le fichier doit être constitué de mots en anglais, avec ou sans ponctuation, avec une grammaire correcte et sans fautes d'orthographe.
 
-Pour compresser le fichier, on associe à chaque mot anglais un indice, qui est plus petit lorsque le mot est plus fréquemment utilisé. On trouve l'indice maximale des mots dans le fichier, et on trouve le nombre de bits nécessaire pour représenter cet indice.
+Pour compresser le fichier, on associe à chaque mot anglais un indice, qui est plus petit lorsque le mot est plus fréquemment utilisé. On trouve l'indice maximal des mots dans le fichier, et on trouve le nombre de bits nécessaire pour représenter cet indice.
 
 Ce nombre de bits suffit à représenter chaque indice du texte, donc on écrit simplement l'indice de chaque mot sur ce nombre de bits. Il s'agit du fichier compressé.
 
