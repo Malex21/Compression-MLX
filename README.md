@@ -9,3 +9,9 @@ Pour compresser le fichier, on associe à chaque mot anglais un indice, qui est 
 Ce nombre de bits suffit à représenter chaque indice du texte, donc on écrit simplement l'indice de chaque mot sur ce nombre de bits. Il s'agit du fichier compressé.
 
 La compression est plus efficace si le texte utilise des mots courants, et est beaucoup moins efficace si un mot rare est utilisé. Je travaille sur une solution à cela.
+
+## Crédits
+
+La liste utilisée vient (top_english_words_mixed_1000000) d'[ici](https://github.com/david47k/top-english-wordlists).
+
+bitIO.py est emprunté de [martineau](https://stackoverflow.com/users/355230/martineau).
