@@ -1,3 +1,5 @@
+""" Code emprunté de martineau (https://stackoverflow.com/users/355230/martineau) """
+
 
 class BitWriter(object):
     def __init__(self, f):
